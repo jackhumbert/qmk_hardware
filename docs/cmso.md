@@ -23,6 +23,6 @@ Here's three example images and renders of what the PCBs would look like with a 
 
 | ![](images/planck_eotw_katie_front.png) | ![](images/planck_eotw_blank_front.png) | ![](images/preonic_eotw_blank_front.png) |
 | ------------- | ------------- | ----- |
-| ![](images/planck_eotw_katie_front_render.png) | ![](images/planck_eotw_blank_front_render.png) | ![](images/preonic_eotw_katie_front_render.png) |
+| ![](images/planck_eotw_katie_front_render.png) | ![](images/planck_eotw_blank_front_render.png) | ![](images/preonic_eotw_blank_front_render.png) |
 
 
