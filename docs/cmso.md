@@ -1,0 +1,1 @@
+![](images/planck_eotw_blank_front.png)
