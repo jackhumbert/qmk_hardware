@@ -156,10 +156,20 @@ def conv_image_to_module(name, scale_factor):
 
     module = header % {"name": name}
 
-    front_image = Image.open("%s_front.png" % name)    
-    print("Reading image from \"%s_front.png\"" % name)
+    try:
+        front_image = Image.open("%s_front.png" % name)    
+        print("Reading image from \"%s_front.png\"" % name)
+    except IOError:
+        print("Couldn't find \"%s_front.png\"" % name)
+        front_image = Image.open("%s.png" % name)    
+        print("Reading image from \"%s.png\"" % name)
 
-    front_image_red, front_image_green, front_image_blue, front_image_alpha = front_image.split()
+    if len(front_image.split()) == 4:
+        front_image_red, front_image_green, front_image_blue, front_image_alpha = front_image.split()
+    else: 
+        front_image_red, front_image_green, front_image_blue = front_image.split()
+        front_image_alpha = False
+
 
     front_image_red = front_image_red.point(lambda i: 0 if i < 127 else 1)
     red_array = np.array(front_image_red)
@@ -168,7 +178,10 @@ def conv_image_to_module(name, scale_factor):
 
     # Soldermask needs to be inverted
     front_image_green = ImageOps.invert(front_image_green)
-    front_image_green = Image.composite(front_image_green, front_image_alpha, front_image_alpha)
+    if front_image_alpha:
+        front_image_green = Image.composite(front_image_green, front_image_alpha, front_image_alpha)
+    else:
+        front_image_green = Image.composite(front_image_green, front_image_green, front_image_green)
     front_image_green = front_image_green.point(lambda i: 0 if i < 127 else 1)
     green_array = np.array(front_image_green)
     bmp_green = potrace.Bitmap(green_array)
@@ -179,15 +192,17 @@ def conv_image_to_module(name, scale_factor):
     bmp_blue = potrace.Bitmap(blue_array)
     path_blue = bmp_blue.trace(alphamax = 0.0, opttolerance = 50)
 
-    front_image_alpha = front_image_alpha.point(lambda i: 0 if i < 127 else 1)
-    front_image_alpha_array = np.array(front_image_alpha)
-    bmp_alpha = potrace.Bitmap(front_image_alpha_array)
-    path_alpha = bmp_alpha.trace(alphamax = 0.0, opttolerance = 50)
+    if front_image_alpha:
+        front_image_alpha = front_image_alpha.point(lambda i: 0 if i < 127 else 1)
+        front_image_alpha_array = np.array(front_image_alpha)
+        bmp_alpha = potrace.Bitmap(front_image_alpha_array)
+        path_alpha = bmp_alpha.trace(alphamax = 0.0, opttolerance = 50)
 
     w, h = front_image.size
 
-    print("Generating Edge.Cuts layer from front alpha channel")
-    module += render_path_to_layer(path_alpha, "fp_line", "Edge.Cuts", scale_factor)
+    if front_image_alpha:
+        print("Generating Edge.Cuts layer from front alpha channel")
+        module += render_path_to_layer(path_alpha, "fp_line", "Edge.Cuts", scale_factor)
 
     print("Generating F.Cu layer from front red channel")
     module += render_path_to_layer(path_red, "fp_poly", "F.Cu", scale_factor)

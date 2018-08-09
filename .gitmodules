@@ -1,0 +1,3 @@
+[submodule "tools/stl_tools"]
+	path = tools/stl_tools
+	url = git@github.com:thearn/stl_tools.git
